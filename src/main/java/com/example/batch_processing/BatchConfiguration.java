@@ -10,6 +10,7 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.batch.infrastructure.item.ItemReader;
 import org.springframework.batch.infrastructure.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,12 +18,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
+import com.example.batch_processing.news.AiClient;
+import com.example.batch_processing.news.ArticleSummarizingProcessor;
+import com.example.batch_processing.news.ClaudeClient;
+import com.example.batch_processing.news.JsonLinesNewsReader;
 import com.example.batch_processing.news.JsonLinesNewsWriter;
 import com.example.batch_processing.news.NewsApiClient;
 import com.example.batch_processing.news.NewsApiProperties;
 import com.example.batch_processing.news.NewsArticle;
 import com.example.batch_processing.news.NewsClient;
 import com.example.batch_processing.news.NewsJobListener;
+import com.example.batch_processing.news.NewsSummary;
 import com.example.batch_processing.news.RestNewsReader;
 
 @Configuration
@@ -65,10 +71,62 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Job fetchNewsJob(JobRepository jobRepository, Step fetchNewsStep, NewsJobListener newsJobListener) {
+    public Job fetchNewsJob(JobRepository jobRepository, Step fetchNewsStep, Step summarizeNewsStep, NewsJobListener newsJobListener) {
         return new JobBuilder(jobRepository)
             .listener(newsJobListener)
             .start(fetchNewsStep)
+            .next(summarizeNewsStep)
+            .build();
+    }
+
+    @Bean
+    public AiClient aiClient(@Value("${anthropic.api-key}") String apiKey) {
+        return new ClaudeClient(apiKey);
+    }
+
+    @Bean
+    @StepScope
+    public ItemReader<List<NewsArticle>> articleFileReader(
+            @Value("#{jobParameters['keyword']}") String keyword) {
+        String filename = String.format("data/%s-%s.jsonl", keyword, LocalDate.now());
+        return new JsonLinesNewsReader(Path.of(filename));
+    }
+
+    @Bean
+    @StepScope
+    public ItemProcessor<List<NewsArticle>, NewsSummary> summarizingProcessor(
+            AiClient aiClient,
+            @Value("#{jobParameters['keyword']}") String keyword) {
+        return new ArticleSummarizingProcessor(aiClient, keyword);
+    }
+
+    @Bean
+    @StepScope
+    public ItemWriter<NewsSummary> summaryWriter() {
+        return chunk -> {
+            for (NewsSummary summary : chunk) {
+                System.out.println("=== Summary for '" + summary.keyword() + "' ===");
+                System.out.println(summary.summary());
+                System.out.println("Processed: " + summary.processedDate());
+                System.out.println();
+            }
+        };
+    }
+
+    @Bean
+    public Step summarizeNewsStep(JobRepository jobRepository,
+                                  DataSourceTransactionManager transactionManager,
+                                  ItemReader<List<NewsArticle>> articleFileReader,
+                                  ItemProcessor<List<NewsArticle>, NewsSummary> summarizingProcessor,
+                                  ItemWriter<NewsSummary> summaryWriter,
+                                  NewsJobListener newsJobListener) {
+        return new StepBuilder(jobRepository)
+            .<List<NewsArticle>, NewsSummary>chunk(1)
+            .transactionManager(transactionManager)
+            .reader(articleFileReader)
+            .processor(summarizingProcessor)
+            .writer(summaryWriter)
+            .listener(newsJobListener)
             .build();
     }
 }
