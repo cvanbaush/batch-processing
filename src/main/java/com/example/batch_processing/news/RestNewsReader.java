@@ -43,9 +43,10 @@ public class RestNewsReader implements ItemReader<List<NewsArticle>> {
 
         NewsApiResponse response = restClient.get()
             .uri(uriBuilder -> uriBuilder
-                .path("/v2/everything")
+                .path("/v2/top-headlines")
                 .queryParam("q", keyword)
-                .queryParam("from", fromDate)
+                // .queryParam("from", fromDate)
+                // .queryParam("language", "en")
                 .queryParam("pageSize", properties.getPageSize())
                 .queryParam("apiKey", properties.getApiKey())
                 .build())
