@@ -1,5 +1,7 @@
 package com.example.batch_processing;
 
+import java.util.List;
+
 import javax.sql.DataSource;
 
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -16,19 +18,22 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
+import com.example.batch_processing.news.NewsApiProperties;
 import com.example.batch_processing.news.NewsArticle;
 import com.example.batch_processing.news.RestNewsReader;
 
 import org.springframework.batch.core.job.Job;
+import org.springframework.beans.factory.annotation.Value;
 
 @Configuration
 public class BatchConfiguration {
 
 
     @Bean
-    public ItemReader<NewsArticle> newsReader() {
-
-        return new RestNewsReader();
+    public ItemReader<List<NewsArticle>> newsReader(
+            NewsApiProperties newsApiProperties,
+            @Value("${news.keyword}") String keyword) {
+        return new RestNewsReader(newsApiProperties, keyword);
     }
 
 
