@@ -1,5 +1,7 @@
 package com.example.batch_processing;
 
+import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -9,6 +11,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.infrastructure.item.ItemReader;
+import org.springframework.batch.infrastructure.item.ItemWriter;
 import org.springframework.batch.infrastructure.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.infrastructure.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.batch.infrastructure.item.file.FlatFileItemReader;
@@ -18,6 +21,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
+import com.example.batch_processing.news.JsonLinesNewsWriter;
 import com.example.batch_processing.news.NewsApiProperties;
 import com.example.batch_processing.news.NewsArticle;
 import com.example.batch_processing.news.RestNewsReader;
@@ -34,6 +38,25 @@ public class BatchConfiguration {
             NewsApiProperties newsApiProperties,
             @Value("${news.keyword}") String keyword) {
         return new RestNewsReader(newsApiProperties, keyword);
+    }
+
+    @Bean
+    public ItemWriter<List<NewsArticle>> newsWriter(@Value("${news.keyword}") String keyword) {
+        String filename = String.format("data/%s-%s.jsonl", keyword, LocalDate.now());
+        return new JsonLinesNewsWriter(Path.of(filename));
+    }
+
+    @Bean
+    public Step fetchNewsStep(JobRepository jobRepository,
+                              DataSourceTransactionManager transactionManager,
+                              ItemReader<List<NewsArticle>> newsReader,
+                              ItemWriter<List<NewsArticle>> newsWriter) {
+        return new StepBuilder(jobRepository)
+            .<List<NewsArticle>, List<NewsArticle>>chunk(1)
+            .transactionManager(transactionManager)
+            .reader(newsReader)
+            .writer(newsWriter)
+            .build();
     }
 
 
