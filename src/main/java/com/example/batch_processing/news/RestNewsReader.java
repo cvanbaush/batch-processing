@@ -37,6 +37,8 @@ public class RestNewsReader implements ItemReader<List<NewsArticle>> {
         return fetchAllArticles();
     }
 
+    private static final int MAX_RESULTS = 100;
+
     private List<NewsArticle> fetchAllArticles() {
         List<NewsArticle> allArticles = new ArrayList<>();
         String fromDate = LocalDate.now().minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
@@ -61,7 +63,7 @@ public class RestNewsReader implements ItemReader<List<NewsArticle>> {
                 break;
             }
 
-            totalResults = response.totalResults();
+            totalResults = Math.min(response.totalResults(), MAX_RESULTS);
 
             for (NewsApiResponse.Article article : response.articles()) {
                 String sourceName = article.source() != null ? article.source().name() : null;
