@@ -37,46 +37,34 @@ public class RestNewsReader implements ItemReader<List<NewsArticle>> {
         return fetchAllArticles();
     }
 
-    private static final int MAX_RESULTS = 100;
-
     private List<NewsArticle> fetchAllArticles() {
         List<NewsArticle> allArticles = new ArrayList<>();
         String fromDate = LocalDate.now().minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
-        int page = 1;
-        int totalResults = 0;
 
-        do {
-            final int currentPage = page;
-            NewsApiResponse response = restClient.get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/v2/everything")
-                    .queryParam("q", keyword)
-                    .queryParam("from", fromDate)
-                    .queryParam("pageSize", properties.getPageSize())
-                    .queryParam("page", currentPage)
-                    .queryParam("apiKey", properties.getApiKey())
-                    .build())
-                .retrieve()
-                .body(NewsApiResponse.class);
+        NewsApiResponse response = restClient.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/v2/everything")
+                .queryParam("q", keyword)
+                .queryParam("from", fromDate)
+                .queryParam("pageSize", properties.getPageSize())
+                .queryParam("apiKey", properties.getApiKey())
+                .build())
+            .retrieve()
+            .body(NewsApiResponse.class);
 
-            if (response == null || response.articles() == null) {
-                break;
-            }
+        if (response == null || response.articles() == null) {
+            return allArticles;
+        }
 
-            totalResults = Math.min(response.totalResults(), MAX_RESULTS);
-
-            for (NewsApiResponse.Article article : response.articles()) {
-                String sourceName = article.source() != null ? article.source().name() : null;
-                allArticles.add(new NewsArticle(
-                    sourceName,
-                    article.author(),
-                    article.title(),
-                    article.description()
-                ));
-            }
-
-            page++;
-        } while (allArticles.size() < totalResults);
+        for (NewsApiResponse.Article article : response.articles()) {
+            String sourceName = article.source() != null ? article.source().name() : null;
+            allArticles.add(new NewsArticle(
+                sourceName,
+                article.author(),
+                article.title(),
+                article.description()
+            ));
+        }
 
         return allArticles;
     }

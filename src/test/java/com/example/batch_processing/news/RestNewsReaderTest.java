@@ -146,44 +146,6 @@ class RestNewsReaderTest {
     }
 
     @Test
-    void read_paginatesThroughAllResults() {
-        var page1Response = new NewsApiResponse(
-            "ok",
-            3,
-            List.of(
-                new NewsApiResponse.Article(
-                    new NewsApiResponse.Source("s1", "Source1"),
-                    "Author1", "Title1", "Desc1", "url1", "2024-01-01T00:00:00Z"
-                ),
-                new NewsApiResponse.Article(
-                    new NewsApiResponse.Source("s2", "Source2"),
-                    "Author2", "Title2", "Desc2", "url2", "2024-01-01T00:00:00Z"
-                )
-            )
-        );
-        var page2Response = new NewsApiResponse(
-            "ok",
-            3,
-            List.of(
-                new NewsApiResponse.Article(
-                    new NewsApiResponse.Source("s3", "Source3"),
-                    "Author3", "Title3", "Desc3", "url3", "2024-01-01T00:00:00Z"
-                )
-            )
-        );
-
-        setupMockResponseSequence(page1Response, page2Response);
-
-        var reader = new RestNewsReader(properties, "nvidia", restClient);
-        List<NewsArticle> articles = reader.read();
-
-        assertThat(articles).hasSize(3);
-        assertThat(articles.get(0).title()).isEqualTo("Title1");
-        assertThat(articles.get(1).title()).isEqualTo("Title2");
-        assertThat(articles.get(2).title()).isEqualTo("Title3");
-    }
-
-    @Test
     void read_returnsEmptyListWhenNoArticles() {
         var response = new NewsApiResponse("ok", 0, List.of());
         setupMockResponse(response);
@@ -200,13 +162,5 @@ class RestNewsReaderTest {
         when(requestHeadersUriSpec.uri(any(Function.class))).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.body(NewsApiResponse.class)).thenReturn(response);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void setupMockResponseSequence(NewsApiResponse first, NewsApiResponse... rest) {
-        when(restClient.get()).thenReturn((RestClient.RequestHeadersUriSpec) requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(any(Function.class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.body(NewsApiResponse.class)).thenReturn(first, rest);
     }
 }
