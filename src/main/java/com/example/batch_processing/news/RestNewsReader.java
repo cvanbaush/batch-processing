@@ -17,11 +17,15 @@ public class RestNewsReader implements ItemReader<List<NewsArticle>> {
     private boolean read = false;
 
     public RestNewsReader(NewsApiProperties properties, String keyword) {
+        this(properties, keyword, RestClient.builder()
+            .baseUrl(properties.getBaseUrl())
+            .build());
+    }
+
+    RestNewsReader(NewsApiProperties properties, String keyword, RestClient restClient) {
         this.properties = properties;
         this.keyword = keyword;
-        this.restClient = RestClient.builder()
-            .baseUrl(properties.getBaseUrl())
-            .build();
+        this.restClient = restClient;
     }
 
     @Override
