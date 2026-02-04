@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
@@ -25,16 +26,18 @@ import com.example.batch_processing.news.RestNewsReader;
 @Configuration
 public class BatchConfiguration {
 
-
     @Bean
+    @StepScope
     public ItemReader<List<NewsArticle>> newsReader(
             NewsApiProperties newsApiProperties,
-            @Value("${news.keyword}") String keyword) {
+            @Value("#{jobParameters['keyword']}") String keyword) {
         return new RestNewsReader(newsApiProperties, keyword);
     }
 
     @Bean
-    public ItemWriter<List<NewsArticle>> newsWriter(@Value("${news.keyword}") String keyword) {
+    @StepScope
+    public ItemWriter<List<NewsArticle>> newsWriter(
+            @Value("#{jobParameters['keyword']}") String keyword) {
         String filename = String.format("data/%s-%s.jsonl", keyword, LocalDate.now());
         return new JsonLinesNewsWriter(Path.of(filename));
     }

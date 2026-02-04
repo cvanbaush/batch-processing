@@ -8,7 +8,6 @@ import org.springframework.batch.core.job.JobExecution;
 import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.listener.JobExecutionListener;
 import org.springframework.batch.core.listener.StepExecutionListener;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,15 +15,10 @@ public class NewsJobListener implements JobExecutionListener, StepExecutionListe
 
     private static final Logger log = LoggerFactory.getLogger(NewsJobListener.class);
 
-    private final String keyword;
-
-    public NewsJobListener(@Value("${news.keyword}") String keyword) {
-        this.keyword = keyword;
-    }
-
     @Override
     public void afterJob(JobExecution jobExecution) {
         String jobName = jobExecution.getJobInstance().getJobName();
+        String keyword = jobExecution.getJobParameters().getString("keyword");
         if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
             log.info("Job '{}' completed successfully for keyword '{}'", jobName, keyword);
         } else if (jobExecution.getStatus() == BatchStatus.FAILED) {
@@ -37,6 +31,7 @@ public class NewsJobListener implements JobExecutionListener, StepExecutionListe
     @Override
     public ExitStatus afterStep(StepExecution stepExecution) {
         String jobName = stepExecution.getJobExecution().getJobInstance().getJobName();
+        String keyword = stepExecution.getJobExecution().getJobParameters().getString("keyword");
         log.info("Job '{}' step '{}' completed for keyword '{}' with status: {}, items written: {}",
             jobName,
             stepExecution.getStepName(),

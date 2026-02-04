@@ -6,7 +6,6 @@ import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest
 @TestPropertySource(properties = {
-	"news.keyword=test",
 	"newsapi.baseUrl=https://newsapi.org",
 	"newsapi.apiKey=test-key",
 	"newsapi.pageSize=10",
