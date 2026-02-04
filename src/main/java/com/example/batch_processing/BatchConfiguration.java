@@ -24,6 +24,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import com.example.batch_processing.news.JsonLinesNewsWriter;
 import com.example.batch_processing.news.NewsApiProperties;
 import com.example.batch_processing.news.NewsArticle;
+import com.example.batch_processing.news.NewsJobListener;
 import com.example.batch_processing.news.RestNewsReader;
 
 import org.springframework.batch.core.job.Job;
@@ -50,12 +51,22 @@ public class BatchConfiguration {
     public Step fetchNewsStep(JobRepository jobRepository,
                               DataSourceTransactionManager transactionManager,
                               ItemReader<List<NewsArticle>> newsReader,
-                              ItemWriter<List<NewsArticle>> newsWriter) {
+                              ItemWriter<List<NewsArticle>> newsWriter,
+                              NewsJobListener newsJobListener) {
         return new StepBuilder(jobRepository)
             .<List<NewsArticle>, List<NewsArticle>>chunk(1)
             .transactionManager(transactionManager)
             .reader(newsReader)
             .writer(newsWriter)
+            .listener(newsJobListener)
+            .build();
+    }
+
+    @Bean
+    public Job fetchNewsJob(JobRepository jobRepository, Step fetchNewsStep, NewsJobListener newsJobListener) {
+        return new JobBuilder(jobRepository)
+            .listener(newsJobListener)
+            .start(fetchNewsStep)
             .build();
     }
 
