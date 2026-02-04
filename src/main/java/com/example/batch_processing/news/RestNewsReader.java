@@ -1,31 +1,19 @@
 package com.example.batch_processing.news;
 
 import org.springframework.batch.infrastructure.item.ItemReader;
-import org.springframework.web.client.RestClient;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 public class RestNewsReader implements ItemReader<List<NewsArticle>> {
 
-    private final NewsApiProperties properties;
-    private final RestClient restClient;
+    private final NewsClient newsClient;
     private final String keyword;
 
     private boolean read = false;
 
-    public RestNewsReader(NewsApiProperties properties, String keyword) {
-        this(properties, keyword, RestClient.builder()
-            .baseUrl(properties.getBaseUrl())
-            .build());
-    }
-
-    RestNewsReader(NewsApiProperties properties, String keyword, RestClient restClient) {
-        this.properties = properties;
+    public RestNewsReader(NewsClient newsClient, String keyword) {
+        this.newsClient = newsClient;
         this.keyword = keyword;
-        this.restClient = restClient;
     }
 
     @Override
@@ -34,39 +22,6 @@ public class RestNewsReader implements ItemReader<List<NewsArticle>> {
             return null;
         }
         read = true;
-        return fetchAllArticles();
-    }
-
-    private List<NewsArticle> fetchAllArticles() {
-        List<NewsArticle> allArticles = new ArrayList<>();
-        String fromDate = LocalDate.now().minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
-
-        NewsApiResponse response = restClient.get()
-            .uri(uriBuilder -> uriBuilder
-                .path("/v2/top-headlines")
-                .queryParam("q", keyword)
-                // .queryParam("from", fromDate)
-                // .queryParam("language", "en")
-                .queryParam("pageSize", properties.getPageSize())
-                .queryParam("apiKey", properties.getApiKey())
-                .build())
-            .retrieve()
-            .body(NewsApiResponse.class);
-
-        if (response == null || response.articles() == null) {
-            return allArticles;
-        }
-
-        for (NewsApiResponse.Article article : response.articles()) {
-            String sourceName = article.source() != null ? article.source().name() : null;
-            allArticles.add(new NewsArticle(
-                sourceName,
-                article.author(),
-                article.title(),
-                article.description()
-            ));
-        }
-
-        return allArticles;
+        return newsClient.fetchArticles(keyword);
     }
 }

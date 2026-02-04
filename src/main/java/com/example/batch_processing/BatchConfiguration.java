@@ -18,8 +18,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
 import com.example.batch_processing.news.JsonLinesNewsWriter;
+import com.example.batch_processing.news.NewsApiClient;
 import com.example.batch_processing.news.NewsApiProperties;
 import com.example.batch_processing.news.NewsArticle;
+import com.example.batch_processing.news.NewsClient;
 import com.example.batch_processing.news.NewsJobListener;
 import com.example.batch_processing.news.RestNewsReader;
 
@@ -27,11 +29,16 @@ import com.example.batch_processing.news.RestNewsReader;
 public class BatchConfiguration {
 
     @Bean
+    public NewsClient newsClient(NewsApiProperties newsApiProperties) {
+        return new NewsApiClient(newsApiProperties);
+    }
+
+    @Bean
     @StepScope
     public ItemReader<List<NewsArticle>> newsReader(
-            NewsApiProperties newsApiProperties,
+            NewsClient newsClient,
             @Value("#{jobParameters['keyword']}") String keyword) {
-        return new RestNewsReader(newsApiProperties, keyword);
+        return new RestNewsReader(newsClient, keyword);
     }
 
     @Bean
