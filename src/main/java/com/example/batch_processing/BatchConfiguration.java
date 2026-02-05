@@ -4,6 +4,8 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -13,6 +15,7 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.batch.infrastructure.item.ItemReader;
 import org.springframework.batch.infrastructure.item.ItemWriter;
+import org.springframework.batch.infrastructure.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -101,16 +104,12 @@ public class BatchConfiguration {
     }
 
     @Bean
-    @StepScope
-    public ItemWriter<NewsSummary> summaryWriter() {
-        return chunk -> {
-            for (NewsSummary summary : chunk) {
-                System.out.println("=== Summary for '" + summary.keyword() + "' ===");
-                System.out.println(summary.summary());
-                System.out.println("Processed: " + summary.processedDate());
-                System.out.println();
-            }
-        };
+    public ItemWriter<NewsSummary> summaryWriter(DataSource dataSource) {
+        return new JdbcBatchItemWriterBuilder<NewsSummary>()
+            .dataSource(dataSource)
+            .sql("INSERT INTO news_summary (keyword, summary, processed_date) VALUES (:keyword, :summary, :processedDate)")
+            .beanMapped()
+            .build();
     }
 
     @Bean

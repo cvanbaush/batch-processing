@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS news_summary (
+    id INTEGER IDENTITY PRIMARY KEY,
+    keyword VARCHAR(255) NOT NULL,
+    summary CLOB NOT NULL,
+    processed_date DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
