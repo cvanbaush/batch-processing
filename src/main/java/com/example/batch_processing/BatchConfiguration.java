@@ -23,7 +23,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
 import com.example.batch_processing.news.AiClient;
 import com.example.batch_processing.news.ArticleSummarizingProcessor;
-import com.example.batch_processing.news.ClaudeClient;
+import com.example.batch_processing.news.OpenAiClient;
 import com.example.batch_processing.news.JsonLinesNewsReader;
 import com.example.batch_processing.news.JsonLinesNewsWriter;
 import com.example.batch_processing.news.NewsApiClient;
@@ -83,8 +83,8 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public AiClient aiClient(@Value("${anthropic.api-key}") String apiKey) {
-        return new ClaudeClient(apiKey);
+    public AiClient aiClient(@Value("${openai.api-key}") String apiKey) {
+        return new OpenAiClient(apiKey);
     }
 
     @Bean
