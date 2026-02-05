@@ -1,4 +1,4 @@
-package com.example.batch_processing.news;
+package com.example.batch_processing.model;
 
 import java.time.LocalDate;
 

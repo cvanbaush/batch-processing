@@ -1,4 +1,4 @@
-package com.example.batch_processing.news;
+package com.example.batch_processing.batch;
 
 import tools.jackson.databind.ObjectMapper;
 import org.springframework.batch.infrastructure.item.Chunk;
@@ -8,6 +8,8 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.nio.file.Path;
 import java.util.List;
+
+import com.example.batch_processing.model.NewsArticle;
 
 public class JsonLinesNewsWriter implements ItemWriter<List<NewsArticle>> {
 

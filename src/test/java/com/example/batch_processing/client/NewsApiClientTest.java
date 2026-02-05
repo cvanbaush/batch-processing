@@ -1,4 +1,4 @@
-package com.example.batch_processing.news;
+package com.example.batch_processing.client;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +9,10 @@ import org.springframework.web.client.RestClient;
 
 import java.util.List;
 import java.util.function.Function;
+
+import com.example.batch_processing.config.NewsApiProperties;
+import com.example.batch_processing.model.NewsApiResponse;
+import com.example.batch_processing.model.NewsArticle;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

@@ -1,9 +1,13 @@
-package com.example.batch_processing.news;
+package com.example.batch_processing.client;
 
 import org.springframework.web.client.RestClient;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.example.batch_processing.config.NewsApiProperties;
+import com.example.batch_processing.model.NewsApiResponse;
+import com.example.batch_processing.model.NewsArticle;
 
 public class NewsApiClient implements NewsClient {
 

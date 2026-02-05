@@ -1,4 +1,4 @@
-package com.example.batch_processing.news;
+package com.example.batch_processing.client;
 
 public interface AiClient {
     String summarize(String content);

@@ -1,4 +1,4 @@
-package com.example.batch_processing;
+package com.example.batch_processing.config;
 
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -21,18 +21,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
-import com.example.batch_processing.news.AiClient;
-import com.example.batch_processing.news.ArticleSummarizingProcessor;
-import com.example.batch_processing.news.OpenAiClient;
-import com.example.batch_processing.news.JsonLinesNewsReader;
-import com.example.batch_processing.news.JsonLinesNewsWriter;
-import com.example.batch_processing.news.NewsApiClient;
-import com.example.batch_processing.news.NewsApiProperties;
-import com.example.batch_processing.news.NewsArticle;
-import com.example.batch_processing.news.NewsClient;
-import com.example.batch_processing.news.NewsJobListener;
-import com.example.batch_processing.news.NewsSummary;
-import com.example.batch_processing.news.RestNewsReader;
+import com.example.batch_processing.batch.ArticleSummarizingProcessor;
+import com.example.batch_processing.batch.JsonLinesNewsReader;
+import com.example.batch_processing.batch.JsonLinesNewsWriter;
+import com.example.batch_processing.batch.RestNewsReader;
+import com.example.batch_processing.client.AiClient;
+import com.example.batch_processing.client.NewsApiClient;
+import com.example.batch_processing.client.NewsClient;
+import com.example.batch_processing.client.OpenAiClient;
+import com.example.batch_processing.listener.NewsJobListener;
+import com.example.batch_processing.model.NewsArticle;
+import com.example.batch_processing.model.NewsSummary;
 
 @Configuration
 public class BatchConfiguration {

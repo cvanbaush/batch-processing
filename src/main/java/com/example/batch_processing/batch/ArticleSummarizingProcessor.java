@@ -1,10 +1,14 @@
-package com.example.batch_processing.news;
+package com.example.batch_processing.batch;
 
 import org.springframework.batch.infrastructure.item.ItemProcessor;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.example.batch_processing.client.AiClient;
+import com.example.batch_processing.model.NewsArticle;
+import com.example.batch_processing.model.NewsSummary;
 
 public class ArticleSummarizingProcessor implements ItemProcessor<List<NewsArticle>, NewsSummary> {
 

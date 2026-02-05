@@ -1,4 +1,4 @@
-package com.example.batch_processing.news;
+package com.example.batch_processing.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;

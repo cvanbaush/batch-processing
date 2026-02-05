@@ -1,8 +1,11 @@
-package com.example.batch_processing.news;
+package com.example.batch_processing.batch;
 
 import org.springframework.batch.infrastructure.item.ItemReader;
 
 import java.util.List;
+
+import com.example.batch_processing.client.NewsClient;
+import com.example.batch_processing.model.NewsArticle;
 
 public class RestNewsReader implements ItemReader<List<NewsArticle>> {
 

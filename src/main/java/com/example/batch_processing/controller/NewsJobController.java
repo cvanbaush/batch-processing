@@ -1,4 +1,4 @@
-package com.example.batch_processing.news;
+package com.example.batch_processing.controller;
 
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.JobExecution;

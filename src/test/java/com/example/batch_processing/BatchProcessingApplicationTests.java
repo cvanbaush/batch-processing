@@ -9,7 +9,9 @@ import org.springframework.test.context.TestPropertySource;
 	"newsapi.base-url=https://newsapi.org",
 	"newsapi.api-key=test-key",
 	"newsapi.page-size=10",
-	"spring.batch.job.enabled=false"
+	"openai.api-key=test-key",
+	"spring.batch.job.enabled=false",
+	"spring.datasource.url=jdbc:hsqldb:mem:testdb"
 })
 class BatchProcessingApplicationTests {
 

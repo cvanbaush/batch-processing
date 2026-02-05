@@ -1,4 +1,4 @@
-package com.example.batch_processing.news;
+package com.example.batch_processing.batch;
 
 import org.springframework.batch.infrastructure.item.ItemReader;
 import tools.jackson.databind.ObjectMapper;
@@ -8,6 +8,8 @@ import java.io.FileReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.example.batch_processing.model.NewsArticle;
 
 public class JsonLinesNewsReader implements ItemReader<List<NewsArticle>> {
 
