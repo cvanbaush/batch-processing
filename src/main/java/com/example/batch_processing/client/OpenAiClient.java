@@ -23,7 +23,7 @@ public class OpenAiClient implements AiClient {
             "model", "gpt-4o-mini",
             "messages", List.of(
                 Map.of("role", "user", "content",
-                    "Summarize the following news articles in 2-3 sentences:\n\n" + content)
+                    "Write a brief paragraph summarizing the key news topics below. Do not mention article titles or reference individual articles. Just summarize the overall news in a flowing paragraph:\n\n" + content)
             ),
             "max_tokens", 1024
         );
