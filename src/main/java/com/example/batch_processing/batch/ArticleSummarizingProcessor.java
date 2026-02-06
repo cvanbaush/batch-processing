@@ -22,6 +22,10 @@ public class ArticleSummarizingProcessor implements ItemProcessor<List<NewsArtic
 
     @Override
     public NewsSummary process(List<NewsArticle> articles) {
+        if (articles == null || articles.isEmpty()) {
+            return new NewsSummary(keyword, "no articles", LocalDate.now());
+        }
+
         String articlesText = articles.stream()
             .map(article -> String.format("Title: %s\nDescription: %s",
                 article.title(),
