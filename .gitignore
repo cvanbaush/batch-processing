@@ -38,3 +38,6 @@ build/
 ### Output data ###
 data/*
 !data/.gitkeep
+!data/articles/
+data/articles/*
+!data/articles/.gitkeep

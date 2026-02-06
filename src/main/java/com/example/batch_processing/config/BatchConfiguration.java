@@ -79,7 +79,7 @@ public class BatchConfiguration {
     @StepScope
     public ItemWriter<List<NewsArticle>> newsWriter(
             @Value("#{jobParameters['keyword']}") String keyword) {
-        String filename = String.format("data/%s-%s.jsonl", keyword, LocalDate.now());
+        String filename = String.format("data/articles/%s/%s-%s.jsonl", keyword, keyword, LocalDate.now());
         return new JsonLinesNewsWriter(Path.of(filename));
     }
 
@@ -105,7 +105,7 @@ public class BatchConfiguration {
     @StepScope
     public ItemReader<List<NewsArticle>> articleFileReader(
             @Value("#{jobParameters['keyword']}") String keyword) {
-        String filename = String.format("data/%s-%s.jsonl", keyword, LocalDate.now());
+        String filename = String.format("data/articles/%s/%s-%s.jsonl", keyword, keyword, LocalDate.now());
         return new JsonLinesNewsReader(Path.of(filename));
     }
 

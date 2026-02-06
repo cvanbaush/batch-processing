@@ -6,6 +6,7 @@ import org.springframework.batch.infrastructure.item.ItemWriter;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class JsonLinesNewsWriter implements ItemWriter<List<NewsArticle>> {
 
     @Override
     public void write(Chunk<? extends List<NewsArticle>> chunk) throws Exception {
+        Files.createDirectories(outputPath.getParent());
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath.toFile()))) {
             for (List<NewsArticle> articleList : chunk) {
                 for (NewsArticle article : articleList) {
