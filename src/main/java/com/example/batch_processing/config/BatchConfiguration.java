@@ -16,6 +16,7 @@ import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.batch.infrastructure.item.ItemReader;
 import org.springframework.batch.infrastructure.item.ItemWriter;
 import org.springframework.batch.infrastructure.item.database.builder.JdbcBatchItemWriterBuilder;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,9 +37,34 @@ import com.example.batch_processing.model.NewsSummary;
 @Configuration
 public class BatchConfiguration {
 
+    // ==================== Job ====================
+
     @Bean
-    public NewsClient newsClient(NewsApiProperties newsApiProperties) {
-        return new NewsApiClient(newsApiProperties);
+    public Job fetchAndSummarizeNewsJob(JobRepository jobRepository,
+                                        Step fetchNewsStep,
+                                        Step summarizeNewsStep,
+                                        NewsJobListener newsJobListener) {
+        return new JobBuilder("fetchAndSummarizeNewsJob", jobRepository)
+            .listener(newsJobListener)
+            .start(fetchNewsStep)
+            .next(summarizeNewsStep)
+            .build();
+    }
+
+    // ==================== Step 1: Fetch News ====================
+
+    @Bean
+    public Step fetchNewsStep(JobRepository jobRepository,
+                              DataSourceTransactionManager transactionManager,
+                              @Qualifier("newsReader") ItemReader<List<NewsArticle>> newsReader,
+                              ItemWriter<List<NewsArticle>> newsWriter,
+                              NewsJobListener newsJobListener) {
+        return new StepBuilder("fetchNewsStep", jobRepository)
+            .<List<NewsArticle>, List<NewsArticle>>chunk(1, transactionManager)
+            .reader(newsReader)
+            .writer(newsWriter)
+            .listener(newsJobListener)
+            .build();
     }
 
     @Bean
@@ -57,33 +83,22 @@ public class BatchConfiguration {
         return new JsonLinesNewsWriter(Path.of(filename));
     }
 
-    @Bean
-    public Step fetchNewsStep(JobRepository jobRepository,
-                              DataSourceTransactionManager transactionManager,
-                              ItemReader<List<NewsArticle>> newsReader,
-                              ItemWriter<List<NewsArticle>> newsWriter,
-                              NewsJobListener newsJobListener) {
-        return new StepBuilder(jobRepository)
-            .<List<NewsArticle>, List<NewsArticle>>chunk(1)
-            .transactionManager(transactionManager)
-            .reader(newsReader)
-            .writer(newsWriter)
-            .listener(newsJobListener)
-            .build();
-    }
+    // ==================== Step 2: Summarize News ====================
 
     @Bean
-    public Job fetchNewsJob(JobRepository jobRepository, Step fetchNewsStep, Step summarizeNewsStep, NewsJobListener newsJobListener) {
-        return new JobBuilder(jobRepository)
+    public Step summarizeNewsStep(JobRepository jobRepository,
+                                  DataSourceTransactionManager transactionManager,
+                                  @Qualifier("articleFileReader") ItemReader<List<NewsArticle>> articleFileReader,
+                                  ItemProcessor<List<NewsArticle>, NewsSummary> summarizingProcessor,
+                                  ItemWriter<NewsSummary> summaryWriter,
+                                  NewsJobListener newsJobListener) {
+        return new StepBuilder("summarizeNewsStep", jobRepository)
+            .<List<NewsArticle>, NewsSummary>chunk(1, transactionManager)
+            .reader(articleFileReader)
+            .processor(summarizingProcessor)
+            .writer(summaryWriter)
             .listener(newsJobListener)
-            .start(fetchNewsStep)
-            .next(summarizeNewsStep)
             .build();
-    }
-
-    @Bean
-    public AiClient aiClient(@Value("${openai.api-key}") String apiKey) {
-        return new OpenAiClient(apiKey);
     }
 
     @Bean
@@ -111,21 +126,15 @@ public class BatchConfiguration {
             .build();
     }
 
+    // ==================== Clients ====================
+
     @Bean
-    public Step summarizeNewsStep(JobRepository jobRepository,
-                                  DataSourceTransactionManager transactionManager,
-                                  ItemReader<List<NewsArticle>> articleFileReader,
-                                  ItemProcessor<List<NewsArticle>, NewsSummary> summarizingProcessor,
-                                  ItemWriter<NewsSummary> summaryWriter,
-                                  NewsJobListener newsJobListener) {
-        return new StepBuilder(jobRepository)
-            .<List<NewsArticle>, NewsSummary>chunk(1)
-            .transactionManager(transactionManager)
-            .reader(articleFileReader)
-            .processor(summarizingProcessor)
-            .writer(summaryWriter)
-            .listener(newsJobListener)
-            .build();
+    public NewsClient newsClient(NewsApiProperties newsApiProperties) {
+        return new NewsApiClient(newsApiProperties);
+    }
+
+    @Bean
+    public AiClient aiClient(@Value("${openai.api-key}") String apiKey) {
+        return new OpenAiClient(apiKey);
     }
 }
-

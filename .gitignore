@@ -32,6 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 
+### Environment ###
+.env
+
 ### Output data ###
 data/*
 !data/.gitkeep

@@ -5,6 +5,7 @@ import org.springframework.batch.core.job.JobExecution;
 import org.springframework.batch.core.job.parameters.JobParameters;
 import org.springframework.batch.core.job.parameters.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,23 +16,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/jobs/news")
 public class NewsJobController {
 
-    private final JobLauncher jobLauncher;
-    private final Job fetchNewsJob;
+    private final JobOperator jobOperator;
+    private final Job fetchAndSummarizeNewsJob;
 
-    public NewsJobController(JobLauncher jobLauncher, Job fetchNewsJob) {
-        this.jobLauncher = jobLauncher;
-        this.fetchNewsJob = fetchNewsJob;
+    public NewsJobController(JobOperator jobOperator, Job fetchAndSummarizeNewsJob) {
+        this.jobOperator = jobOperator;
+        this.fetchAndSummarizeNewsJob = fetchAndSummarizeNewsJob;
     }
 
     @PostMapping
     public ResponseEntity<JobResponse> runJob(@RequestParam String keyword) {
         try {
             JobParameters jobParameters = new JobParametersBuilder()
-                .addString("keyword", keyword)
-                .addLong("timestamp", System.currentTimeMillis())
+                .addString("keyword", keyword, true)
+                .addLong("timestamp", System.currentTimeMillis(), true)
                 .toJobParameters();
 
-            JobExecution jobExecution = jobLauncher.run(fetchNewsJob, jobParameters);
+            JobExecution jobExecution = jobOperator.run(fetchAndSummarizeNewsJob, jobParameters);
 
             return ResponseEntity.ok(new JobResponse(
                 jobExecution.getId(),
